@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #e7e4dc;
+}
+
+/* Print: show only the spec sheet, hide the app chrome. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .spec-print,
+  .spec-print * {
+    visibility: visible;
+  }
+  .spec-print {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    width: 100%;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+  @page {
+    size: A4 portrait;
+    margin: 16mm;
+  }
+}
