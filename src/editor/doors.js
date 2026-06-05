@@ -23,16 +23,30 @@ const BUILTIN_STYLE_LABELS = {
 };
 
 // Custom door designs. Drop image files into public/door-designs/ and add
-// an entry below. id must be unique; label appears in the picker; src is
-// the public URL (Vite serves anything under public/ at the root).
+// an entry below. id must be unique; label appears in the picker; file is
+// the name of the image inside public/door-designs/.
+//
+// `src` is built with Vite's BASE_URL so paths resolve both in local dev
+// (base "/") and on GitHub Pages (base "/wardrobeai/"). Never hard-code a
+// leading-slash absolute path here — it would 404 on Pages' subpath.
 //
 // Example:
-//   { id: 'custom-oak-grain', label: 'Oak Grain', src: '/door-designs/oak-grain.jpg' }
-export const CUSTOM_DESIGNS = [
-  { id: 'custom-light-oak', label: 'Light Oak', src: '/door-designs/lightoak.jpg' },
-  { id: 'custom-dark-oak', label: 'Dark Oak', src: '/door-designs/dark%20oak.jpg' },
-  { id: 'custom-walnut', label: 'Walnut', src: '/door-designs/walnut.jpg' },
+//   { id: 'custom-oak-grain', label: 'Oak Grain', file: 'oak-grain.jpg' }
+const BASE = import.meta.env.BASE_URL; // "/" in dev, "/wardrobeai/" on Pages
+
+const CUSTOM_DESIGN_FILES = [
+  { id: 'custom-light-oak', label: 'Light Oak', file: 'lightoak.jpg' },
+  { id: 'custom-dark-oak', label: 'Dark Oak', file: 'dark oak.jpg' },
+  { id: 'custom-walnut', label: 'Walnut', file: 'walnut.jpg' },
 ];
+
+export const CUSTOM_DESIGNS = CUSTOM_DESIGN_FILES.map((d) => ({
+  id: d.id,
+  label: d.label,
+  // encodeURIComponent handles spaces (e.g. "dark oak.jpg"); BASE already
+  // ends with a slash so we don't add one.
+  src: `${BASE}door-designs/${encodeURIComponent(d.file)}`,
+}));
 
 export const PANEL_STYLES = [
   ...Object.keys(BUILTIN_STYLE_LABELS),
