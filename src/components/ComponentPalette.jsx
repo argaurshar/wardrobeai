@@ -60,8 +60,8 @@ function PaletteCard({ type, activeType, onCardDown }) {
         type="button"
         onPointerDown={(e) => onCardDown(type, e)}
         className={[
-          'w-full text-left p-3 rounded-md bg-stone-900 border transition-colors select-none',
-          'hover:bg-stone-800 hover:border-stone-600',
+          'w-full text-left p-3 rounded-md bg-stone-900 border transition-all duration-150 select-none',
+          'hover:bg-stone-800 hover:border-stone-600 hover:translate-x-1',
           activeType === type
             ? 'border-accent/60 ring-1 ring-accent/40 cursor-grabbing'
             : 'border-stone-800 cursor-grab',
