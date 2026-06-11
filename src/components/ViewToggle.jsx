@@ -21,8 +21,10 @@ export default function ViewToggle({ value, onChange }) {
             aria-selected={active}
             onClick={() => onChange(v.id)}
             className={[
-              'px-5 py-1.5 rounded-full text-xs uppercase tracking-architectural transition-colors',
-              active ? 'bg-accent text-surround' : 'text-stone-400 hover:text-stone-200',
+              'px-5 py-1.5 rounded-full text-xs uppercase tracking-architectural transition-all duration-200',
+              active
+                ? 'bg-accent text-surround animate-pop'
+                : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800',
             ].join(' ')}
           >
             {v.label}

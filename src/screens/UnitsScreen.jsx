@@ -1,6 +1,6 @@
 export default function UnitsScreen({ unit, onChange, onContinue }) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-8">
+    <div className="min-h-screen flex flex-col items-center justify-center px-8 animate-rise">
       <p className="text-accent text-[11px] uppercase tracking-architectural mb-10">
         Step 01 — Units
       </p>
@@ -32,7 +32,7 @@ export default function UnitsScreen({ unit, onChange, onContinue }) {
 
       <button
         onClick={onContinue}
-        className="mt-12 px-10 py-3 rounded-full bg-accent text-surround text-sm font-semibold tracking-wide hover:bg-accentHover transition-colors"
+        className="mt-12 px-10 py-3 rounded-full bg-accent text-surround text-sm font-semibold tracking-wide hover:bg-accentHover hover:shadow-glow hover:scale-[1.03] active:scale-95 transition-all duration-200"
       >
         Continue
       </button>
@@ -47,10 +47,10 @@ function ToggleButton({ selected, onClick, label, sub }) {
       aria-selected={selected}
       onClick={onClick}
       className={[
-        'px-8 py-3 rounded-full text-sm transition-colors',
+        'px-8 py-3 rounded-full text-sm transition-all duration-200',
         selected
-          ? 'bg-accent text-surround'
-          : 'text-stone-400 hover:text-stone-200',
+          ? 'bg-accent text-surround animate-pop'
+          : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800',
       ].join(' ')}
     >
       <span className="font-medium">{label}</span>

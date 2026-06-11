@@ -20,7 +20,7 @@ export default function OptionsScreen({ dims, onBack, onConfirm }) {
   };
 
   return (
-    <div className="min-h-screen px-10 py-12">
+    <div className="min-h-screen px-10 pt-20 pb-12 animate-rise">
       <header className="flex items-center justify-between mb-10 max-w-[1600px] mx-auto">
         <div>
           <p className="text-accent text-[11px] uppercase tracking-architectural mb-2">
@@ -35,19 +35,20 @@ export default function OptionsScreen({ dims, onBack, onConfirm }) {
         </div>
         <button
           onClick={onBack}
-          className="px-5 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 transition-colors"
+          className="px-5 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
         >
           Back
         </button>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-[1600px] mx-auto">
-        {STRATEGY_ORDER.map((key) => (
+        {STRATEGY_ORDER.map((key, i) => (
           <OptionCard
             key={key}
             layout={options[key]}
             selected={selected === key}
             onSelect={() => pick(key)}
+            delay={i * 90}
           />
         ))}
       </div>
@@ -56,7 +57,7 @@ export default function OptionsScreen({ dims, onBack, onConfirm }) {
         <button
           disabled={!selected}
           onClick={confirm}
-          className="px-10 py-3 rounded-full bg-accent text-surround text-sm font-semibold tracking-wide hover:bg-accentHover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-10 py-3 rounded-full bg-accent text-surround text-sm font-semibold tracking-wide hover:bg-accentHover hover:shadow-glow hover:scale-[1.03] active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
         >
           {selected ? `Continue with ${options[selected].label} →` : 'Pick a layout to continue'}
         </button>
@@ -65,17 +66,26 @@ export default function OptionsScreen({ dims, onBack, onConfirm }) {
   );
 }
 
-function OptionCard({ layout, selected, onSelect }) {
+function OptionCard({ layout, selected, onSelect, delay = 0 }) {
   return (
     <button
       type="button"
       onClick={onSelect}
+      style={{ animationDelay: `${delay}ms` }}
       className={[
-        'group text-left transition-all rounded-2xl p-1',
-        selected ? 'ring-2 ring-accent' : 'ring-1 ring-transparent hover:ring-stone-700',
+        'group text-left transition-all duration-200 rounded-2xl p-1 animate-rise',
+        selected
+          ? 'ring-2 ring-accent shadow-glow -translate-y-1 bg-stone-900/60'
+          : 'ring-1 ring-transparent hover:ring-stone-600 hover:-translate-y-1 hover:bg-stone-900/40',
       ].join(' ')}
     >
-      <p className="text-inkFaint text-[11px] uppercase tracking-architectural px-2 pt-3 pb-4">
+      <p
+        className={[
+          'text-[11px] uppercase tracking-architectural px-2 pt-3 pb-4 transition-colors',
+          selected ? 'text-accent' : 'text-inkFaint group-hover:text-stone-300',
+        ].join(' ')}
+      >
+        {selected ? '● ' : ''}
         {layout.label}
       </p>
 

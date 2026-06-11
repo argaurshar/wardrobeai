@@ -259,7 +259,7 @@ export default function EditorScreen({ initialLayout, onBack }) {
       : null;
 
   return (
-    <div className="h-screen flex flex-col items-center px-10 py-4 overflow-hidden">
+    <div className="h-screen flex flex-col items-center px-10 py-4 overflow-hidden animate-rise">
       <header className="w-full max-w-[1500px] flex items-center justify-between mb-4 shrink-0">
         <div>
           <p className="text-accent text-[11px] uppercase tracking-architectural mb-2">
@@ -273,7 +273,7 @@ export default function EditorScreen({ initialLayout, onBack }) {
           <button
             onClick={history.undo}
             disabled={!history.canUndo}
-            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
             title="Undo (Ctrl/⌘ Z)"
           >
             ↶ Undo
@@ -281,20 +281,20 @@ export default function EditorScreen({ initialLayout, onBack }) {
           <button
             onClick={history.redo}
             disabled={!history.canRedo}
-            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
             title="Redo (Ctrl/⌘ ⇧ Z)"
           >
             ↷ Redo
           </button>
           <button
             onClick={() => setShowSpec(true)}
-            className="ml-2 px-5 py-2 rounded-full bg-accent text-surround text-sm font-semibold hover:bg-accentHover transition-colors"
+            className="ml-2 px-5 py-2 rounded-full bg-accent text-surround text-sm font-semibold hover:bg-accentHover hover:shadow-glow hover:scale-[1.03] active:scale-95 transition-all duration-200"
           >
             Spec sheet
           </button>
           <button
             onClick={onBack}
-            className="px-5 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 transition-colors"
+            className="px-5 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
           >
             Back to options
           </button>

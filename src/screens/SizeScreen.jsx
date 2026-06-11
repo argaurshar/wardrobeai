@@ -26,7 +26,7 @@ export default function SizeScreen({ unit, onBack, onSubmit }) {
   const set = (k) => (e) => setVals({ ...vals, [k]: e.target.value });
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-8">
+    <div className="min-h-screen flex flex-col items-center justify-center px-8 animate-rise">
       <p className="text-accent text-[11px] uppercase tracking-architectural mb-10">
         Step 02 — Cavity size
       </p>
@@ -53,14 +53,14 @@ export default function SizeScreen({ unit, onBack, onSubmit }) {
       <div className="mt-12 flex gap-3">
         <button
           onClick={onBack}
-          className="px-6 py-3 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 transition-colors"
+          className="px-6 py-3 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
         >
           Back
         </button>
         <button
           disabled={!ok}
           onClick={() => onSubmit(mm)}
-          className="px-10 py-3 rounded-full bg-accent text-surround text-sm font-semibold tracking-wide hover:bg-accentHover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-10 py-3 rounded-full bg-accent text-surround text-sm font-semibold tracking-wide hover:bg-accentHover hover:shadow-glow hover:scale-[1.03] active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
         >
           Generate options
         </button>
@@ -83,7 +83,7 @@ function DimInput({ label, unit, value, onChange }) {
           min="0"
           value={value}
           onChange={onChange}
-          className="w-full bg-stone-900 border border-stone-800 rounded-md px-4 py-3 text-stone-100 text-2xl font-medium focus:outline-none focus:border-accent/70 transition-colors"
+          className="w-full bg-stone-900 border border-stone-800 rounded-md px-4 py-3 text-stone-100 text-2xl font-medium hover:border-stone-600 focus:outline-none focus:border-accent/70 focus:ring-2 focus:ring-accent/20 transition-all"
         />
         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-500 text-sm">
           {unit}
