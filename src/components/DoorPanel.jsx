@@ -20,14 +20,55 @@ const MIRROR = {
 
 const GAP = 3; // small inset between adjacent panels so they read as separate
 
+// Styles whose face is the finish material and can carry a wood grain.
+const GRAINED_STYLES = ['slab', 'shaker', 'fluted'];
+
 export default function DoorPanel({ x, y, width, height, style, colors }) {
   const dx = x + GAP / 2;
   const dy = y + GAP / 2;
   const dw = width - GAP;
   const dh = height - GAP;
+  const grained = GRAINED_STYLES.includes(style) && colors.grain;
   return (
     <g>
       <PanelFill x={dx} y={dy} width={dw} height={dh} style={style} colors={colors} />
+      {grained && (
+        <GrainOverlay x={dx} y={dy} width={dw} height={dh} stroke={colors.oakStroke} />
+      )}
+    </g>
+  );
+}
+
+// Subtle vertical wood grain: gently waving strokes at low opacity, clipped
+// to the panel. Deterministic (no Math.random) so renders are stable.
+function GrainOverlay({ x, y, width, height, stroke }) {
+  const clipId = `grain-clip-${Math.round(x)}-${Math.round(y)}`;
+  const paths = [];
+  const spacing = 26;
+  for (let i = 0, gx = x + spacing * 0.6; gx < x + width - 4; i += 1, gx += spacing) {
+    // pseudo-random but deterministic wobble per line
+    const seed = ((i * 73) % 17) / 17;
+    const amp = 3 + seed * 6;
+    const w = 0.8 + seed * 1.2;
+    const op = 0.06 + seed * 0.08;
+    const midY = y + height / 2 + (seed - 0.5) * height * 0.2;
+    paths.push(
+      <path
+        key={i}
+        d={`M ${gx} ${y} C ${gx + amp} ${y + height * 0.25}, ${gx - amp} ${midY}, ${gx + amp * 0.5} ${y + height * 0.75} S ${gx} ${y + height}, ${gx} ${y + height}`}
+        fill="none"
+        stroke={stroke}
+        strokeWidth={w}
+        opacity={op}
+      />,
+    );
+  }
+  return (
+    <g>
+      <clipPath id={clipId}>
+        <rect x={x} y={y} width={width} height={height} />
+      </clipPath>
+      <g clipPath={`url(#${clipId})`}>{paths}</g>
     </g>
   );
 }
