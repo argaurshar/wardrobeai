@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { generateThreeOptions } from '../engine/layoutEngine.js';
+import { computeQuote, loadRateCard, formatINR } from '../editor/pricing.js';
 import WardrobeSVG from '../components/WardrobeSVG.jsx';
 
 const STRATEGY_ORDER = ['maxHanging', 'maxStorage', 'balanced'];
@@ -7,6 +8,15 @@ const STRATEGY_ORDER = ['maxHanging', 'maxStorage', 'balanced'];
 export default function OptionsScreen({ dims, onBack, onConfirm }) {
   const options = useMemo(() => generateThreeOptions(dims), [dims]);
   const [selected, setSelected] = useState(null);
+
+  // Estimated price per option (designer's saved rate card) for comparison.
+  const quotes = useMemo(() => {
+    const card = loadRateCard();
+    const out = {};
+    for (const key of STRATEGY_ORDER) out[key] = computeQuote(options[key], card);
+    return out;
+  }, [options]);
+  const cheapest = Math.min(...STRATEGY_ORDER.map((k) => quotes[k].total));
 
   const pick = (key) => {
     setSelected(key);
@@ -49,6 +59,8 @@ export default function OptionsScreen({ dims, onBack, onConfirm }) {
             selected={selected === key}
             onSelect={() => pick(key)}
             delay={i * 90}
+            total={quotes[key].total}
+            deltaVsCheapest={quotes[key].total - cheapest}
           />
         ))}
       </div>
@@ -66,7 +78,7 @@ export default function OptionsScreen({ dims, onBack, onConfirm }) {
   );
 }
 
-function OptionCard({ layout, selected, onSelect, delay = 0 }) {
+function OptionCard({ layout, selected, onSelect, delay = 0, total, deltaVsCheapest }) {
   return (
     <button
       type="button"
@@ -79,15 +91,32 @@ function OptionCard({ layout, selected, onSelect, delay = 0 }) {
           : 'ring-1 ring-transparent hover:ring-stone-600 hover:-translate-y-1 hover:bg-stone-900/40',
       ].join(' ')}
     >
-      <p
-        className={[
-          'text-[11px] uppercase tracking-architectural px-2 pt-3 pb-4 transition-colors',
-          selected ? 'text-accent' : 'text-inkFaint group-hover:text-stone-300',
-        ].join(' ')}
-      >
-        {selected ? '● ' : ''}
-        {layout.label}
-      </p>
+      <div className="flex items-baseline justify-between px-2 pt-3 pb-4">
+        <p
+          className={[
+            'text-[11px] uppercase tracking-architectural transition-colors',
+            selected ? 'text-accent' : 'text-inkFaint group-hover:text-stone-300',
+          ].join(' ')}
+        >
+          {selected ? '● ' : ''}
+          {layout.label}
+        </p>
+        <p className="text-right">
+          <span className="text-stone-100 font-mono text-sm font-semibold tabular-nums">
+            ~{formatINR(total)}
+          </span>
+          <span
+            className={[
+              'block text-[10px] font-mono tabular-nums',
+              deltaVsCheapest === 0 ? 'text-emerald-400' : 'text-stone-500',
+            ].join(' ')}
+          >
+            {deltaVsCheapest === 0
+              ? 'lowest estimate'
+              : `+${formatINR(deltaVsCheapest)} vs lowest`}
+          </span>
+        </p>
+      </div>
 
       <div className="bg-cream rounded-xl shadow-inset p-6">
         <WardrobeSVG layout={layout} />

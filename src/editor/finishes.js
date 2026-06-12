@@ -159,5 +159,34 @@ export const FINISH_ORDER = FINISH_CATEGORIES.flatMap((cat) =>
 export const DEFAULT_FINISH = 'lightOak';
 
 export function getFinishColors(id) {
-  return (FINISHES[id] ?? FINISHES[DEFAULT_FINISH]).colors;
+  const f = FINISHES[id] ?? FINISHES[DEFAULT_FINISH];
+  return { ...f.colors, grain: hasGrain(id) };
+}
+
+// True for warm wood-like colours (oak, walnut, teak…) — used to decide
+// whether a surface gets a grain texture. Whites, greys and gloss colours
+// stay flat. Hue 15–55°, some saturation, mid lightness.
+export function isWoodTone(hex) {
+  const [r, g, b] = hexToRgb(hex).map((v) => v / 255);
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return false; // pure grey
+  const d = max - min;
+  const s = d / (1 - Math.abs(2 * l - 1));
+  let h;
+  if (max === r) h = ((g - b) / d) % 6;
+  else if (max === g) h = (b - r) / d + 2;
+  else h = (r - g) / d + 4;
+  h = (h * 60 + 360) % 360;
+  return h >= 10 && h <= 55 && s >= 0.15 && l >= 0.15 && l <= 0.85;
+}
+
+// Grain only makes sense on real-wood-look materials; acrylic and PU are
+// painted/gloss surfaces and stay flat regardless of colour.
+const GRAIN_CATEGORIES = ['Laminate', 'Membrane-PVC', 'Veneer'];
+
+export function hasGrain(id) {
+  const f = FINISHES[id] ?? FINISHES[DEFAULT_FINISH];
+  return GRAIN_CATEGORIES.includes(f.category) && isWoodTone(f.colors.oak);
 }

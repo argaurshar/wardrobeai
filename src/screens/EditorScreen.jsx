@@ -70,6 +70,53 @@ export default function EditorScreen({ initialLayout, onBack }) {
   const [shareMsg, setShareMsg] = useState(null);
   const canvasRef = useRef(null);
 
+  // --- canvas zoom & pan ----------------------------------------------------
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }, [view]);
+
+  const zoomBy = (f) =>
+    setZoom((z) => Math.min(3, Math.max(1, Math.round(z * f * 100) / 100)));
+
+  // ctrl/cmd + wheel zoom — needs a non-passive listener for preventDefault
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+    const onWheel = (e) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      zoomBy(e.deltaY < 0 ? 1.15 : 1 / 1.15);
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
+
+  // Pan: alt-drag or middle-drag anywhere; plain drag on the cream background
+  // when zoomed in. Captured before the SVG's own drag handlers.
+  const onCanvasPointerDown = (e) => {
+    const onBackground =
+      e.target === e.currentTarget || e.target.dataset?.canvasBg === '1';
+    if (!(e.altKey || e.button === 1 || (onBackground && zoom > 1))) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const start = { x: e.clientX, y: e.clientY, base: pan };
+    const move = (ev) =>
+      setPan({
+        x: start.base.x + ev.clientX - start.x,
+        y: start.base.y + ev.clientY - start.y,
+      });
+    const up = () => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+    };
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+  };
+
   // Auto-save: the design you were last working on survives a refresh.
   useEffect(() => {
     saveCurrent(layout);
@@ -423,8 +470,34 @@ export default function EditorScreen({ initialLayout, onBack }) {
 
           <div
             ref={canvasRef}
-            className="bg-cream rounded-2xl shadow-inset p-4 flex-1 min-h-0 flex items-center justify-center"
+            onPointerDownCapture={onCanvasPointerDown}
+            className="bg-cream rounded-2xl shadow-inset flex-1 min-h-0 relative overflow-hidden"
           >
+            <div className="absolute top-3 right-3 z-10 flex items-center gap-1">
+              <ZoomButton label="−" title="Zoom out" onClick={() => zoomBy(1 / 1.25)} />
+              <span className="px-2 py-1 rounded-md bg-stone-900/80 text-stone-300 text-[11px] font-mono tabular-nums select-none">
+                {Math.round(zoom * 100)}%
+              </span>
+              <ZoomButton label="+" title="Zoom in (Ctrl + scroll)" onClick={() => zoomBy(1.25)} />
+              {(zoom !== 1 || pan.x !== 0 || pan.y !== 0) && (
+                <ZoomButton
+                  label="⤢"
+                  title="Reset zoom & pan"
+                  onClick={() => {
+                    setZoom(1);
+                    setPan({ x: 0, y: 0 });
+                  }}
+                />
+              )}
+            </div>
+            <div
+              data-canvas-bg="1"
+              className="w-full h-full p-4 flex items-center justify-center"
+              style={{
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                cursor: zoom > 1 ? 'grab' : undefined,
+              }}
+            >
             {view === 'interior' && (
               <WardrobeSVG
                 ref={svgRef}
@@ -459,7 +532,8 @@ export default function EditorScreen({ initialLayout, onBack }) {
                 selectedPanelIdx={doorStylePopup?.panelIdx}
               />
             )}
-            {view === 'isometric' && <IsometricView layout={layout} />}
+              {view === 'isometric' && <IsometricView layout={layout} />}
+            </div>
           </div>
 
           <div className="shrink-0 mt-3">
@@ -553,6 +627,19 @@ export default function EditorScreen({ initialLayout, onBack }) {
         />
       )}
     </div>
+  );
+}
+
+function ZoomButton({ label, title, onClick }) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      className="w-7 h-7 rounded-md bg-stone-900/80 text-stone-200 text-sm leading-none hover:bg-stone-800 active:scale-95 transition-all duration-150"
+    >
+      {label}
+    </button>
   );
 }
 
