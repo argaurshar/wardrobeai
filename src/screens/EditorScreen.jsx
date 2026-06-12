@@ -16,6 +16,8 @@ import SpecSheet from '../components/SpecSheet.jsx';
 import QuotePanel from '../components/QuotePanel.jsx';
 import RateCardEditor from '../components/RateCardEditor.jsx';
 import ProjectsPanel from '../components/ProjectsPanel.jsx';
+import CutListSheet from '../components/CutListSheet.jsx';
+import AuditPanel from '../components/AuditPanel.jsx';
 import useLayoutHistory from '../editor/useLayoutHistory.js';
 import { loadRateCard, saveRateCard } from '../editor/pricing.js';
 import { saveCurrent, buildShareUrl } from '../editor/storage.js';
@@ -64,6 +66,7 @@ export default function EditorScreen({ initialLayout, onBack }) {
   const [rateCard, setRateCard] = useState(loadRateCard);
   const [showRates, setShowRates] = useState(false);
   const [showProjects, setShowProjects] = useState(false);
+  const [showCutList, setShowCutList] = useState(false);
   const [shareMsg, setShareMsg] = useState(null);
   const canvasRef = useRef(null);
 
@@ -329,18 +332,18 @@ export default function EditorScreen({ initialLayout, onBack }) {
           <button
             onClick={history.undo}
             disabled={!history.canUndo}
-            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-3 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
             title="Undo (Ctrl/⌘ Z)"
           >
-            ↶ Undo
+            ↶
           </button>
           <button
             onClick={history.redo}
             disabled={!history.canRedo}
-            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-3 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
             title="Redo (Ctrl/⌘ ⇧ Z)"
           >
-            ↷ Redo
+            ↷
           </button>
           <button
             onClick={() => setShowProjects(true)}
@@ -362,6 +365,13 @@ export default function EditorScreen({ initialLayout, onBack }) {
             title="Copy a link that opens this exact design"
           >
             {shareMsg ?? 'Share'}
+          </button>
+          <button
+            onClick={() => setShowCutList(true)}
+            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
+            title="Panel cut list and hardware quantities for production"
+          >
+            Cut list
           </button>
           <button
             onClick={() => setShowSpec(true)}
@@ -403,6 +413,7 @@ export default function EditorScreen({ initialLayout, onBack }) {
             rateCard={rateCard}
             onEditRates={() => setShowRates(true)}
           />
+          <AuditPanel layout={layout} />
         </aside>
 
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
@@ -497,6 +508,10 @@ export default function EditorScreen({ initialLayout, onBack }) {
           onSave={handleRatesSave}
           onCancel={() => setShowRates(false)}
         />
+      )}
+
+      {showCutList && (
+        <CutListSheet layout={layout} onClose={() => setShowCutList(false)} />
       )}
 
       {showProjects && (
