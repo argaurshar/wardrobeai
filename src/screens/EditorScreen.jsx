@@ -15,8 +15,11 @@ import IsometricView from '../components/IsometricView.jsx';
 import SpecSheet from '../components/SpecSheet.jsx';
 import QuotePanel from '../components/QuotePanel.jsx';
 import RateCardEditor from '../components/RateCardEditor.jsx';
+import ProjectsPanel from '../components/ProjectsPanel.jsx';
 import useLayoutHistory from '../editor/useLayoutHistory.js';
 import { loadRateCard, saveRateCard } from '../editor/pricing.js';
+import { saveCurrent, buildShareUrl } from '../editor/storage.js';
+import { exportSvgToPng } from '../editor/exportPng.js';
 import { DEFAULT_FINISH } from '../editor/finishes.js';
 import { defaultHardware } from '../editor/hardware.js';
 import { defaultLoft } from '../editor/loft.js';
@@ -60,6 +63,48 @@ export default function EditorScreen({ initialLayout, onBack }) {
   const [doorStylePopup, setDoorStylePopup] = useState(null); // { panelIdx } | null
   const [rateCard, setRateCard] = useState(loadRateCard);
   const [showRates, setShowRates] = useState(false);
+  const [showProjects, setShowProjects] = useState(false);
+  const [shareMsg, setShareMsg] = useState(null);
+  const canvasRef = useRef(null);
+
+  // Auto-save: the design you were last working on survives a refresh.
+  useEffect(() => {
+    saveCurrent(layout);
+  }, [layout]);
+
+  const handleLoadLayout = (loaded) => {
+    history.push(() => ({
+      ...loaded,
+      finish: loaded.finish ?? DEFAULT_FINISH,
+      doors: loaded.doors ?? defaultDoors(loaded.columns),
+      hardware: loaded.hardware ?? defaultHardware(),
+    }));
+  };
+
+  const handleShare = async () => {
+    try {
+      const url = await buildShareUrl(layout);
+      await navigator.clipboard.writeText(url);
+      setShareMsg('Link copied ✓');
+    } catch {
+      setShareMsg('Could not copy link');
+    }
+    setTimeout(() => setShareMsg(null), 2500);
+  };
+
+  const handlePng = async () => {
+    const svg = canvasRef.current?.querySelector('svg');
+    if (!svg) return;
+    try {
+      await exportSvgToPng(
+        svg,
+        `wardrobe-${view}-${layout.dims.width}x${layout.dims.height}.png`,
+      );
+    } catch {
+      setShareMsg('PNG export failed');
+      setTimeout(() => setShareMsg(null), 2500);
+    }
+  };
 
   const handleRatesSave = (card) => {
     setRateCard(card);
@@ -298,6 +343,27 @@ export default function EditorScreen({ initialLayout, onBack }) {
             ↷ Redo
           </button>
           <button
+            onClick={() => setShowProjects(true)}
+            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
+            title="Save, load, export or import designs"
+          >
+            Projects
+          </button>
+          <button
+            onClick={handlePng}
+            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
+            title="Download the current view as an image"
+          >
+            PNG
+          </button>
+          <button
+            onClick={handleShare}
+            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
+            title="Copy a link that opens this exact design"
+          >
+            {shareMsg ?? 'Share'}
+          </button>
+          <button
             onClick={() => setShowSpec(true)}
             className="ml-2 px-5 py-2 rounded-full bg-accent text-surround text-sm font-semibold hover:bg-accentHover hover:shadow-glow hover:scale-[1.03] active:scale-95 transition-all duration-200"
           >
@@ -344,7 +410,10 @@ export default function EditorScreen({ initialLayout, onBack }) {
             <ViewToggle value={view} onChange={setView} />
           </div>
 
-          <div className="bg-cream rounded-2xl shadow-inset p-4 flex-1 min-h-0 flex items-center justify-center">
+          <div
+            ref={canvasRef}
+            className="bg-cream rounded-2xl shadow-inset p-4 flex-1 min-h-0 flex items-center justify-center"
+          >
             {view === 'interior' && (
               <WardrobeSVG
                 ref={svgRef}
@@ -427,6 +496,14 @@ export default function EditorScreen({ initialLayout, onBack }) {
           rateCard={rateCard}
           onSave={handleRatesSave}
           onCancel={() => setShowRates(false)}
+        />
+      )}
+
+      {showProjects && (
+        <ProjectsPanel
+          layout={layout}
+          onLoadLayout={handleLoadLayout}
+          onClose={() => setShowProjects(false)}
         />
       )}
 
