@@ -1,4 +1,4 @@
-export default function UnitsScreen({ unit, onChange, onContinue }) {
+export default function UnitsScreen({ unit, onChange, onContinue, onResume }) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-8 animate-rise">
       <p className="text-accent text-[11px] uppercase tracking-architectural mb-10">
@@ -36,6 +36,15 @@ export default function UnitsScreen({ unit, onChange, onContinue }) {
       >
         Continue
       </button>
+
+      {onResume && (
+        <button
+          onClick={onResume}
+          className="mt-5 px-6 py-2 rounded-full border border-stone-700 text-stone-400 text-xs hover:border-accent/60 hover:text-accent transition-colors"
+        >
+          ↩ Resume last design
+        </button>
+      )}
     </div>
   );
 }

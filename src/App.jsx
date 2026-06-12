@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import UnitsScreen from './screens/UnitsScreen.jsx';
+import { loadCurrent, loadFromHash, clearHash } from './editor/storage.js';
 import SizeScreen from './screens/SizeScreen.jsx';
 import OptionsScreen from './screens/OptionsScreen.jsx';
 import EditorScreen from './screens/EditorScreen.jsx';
@@ -16,6 +17,27 @@ export default function App() {
   const [unit, setUnit] = useState('mm');
   const [dims, setDims] = useState(null); // always stored in mm
   const [chosenLayout, setChosenLayout] = useState(null);
+  const [resumable] = useState(loadCurrent);
+
+  const openInEditor = (layout) => {
+    setDims(layout.dims);
+    setChosenLayout(layout);
+    setStep('editor');
+  };
+
+  // A share link (#d=...) opens straight into the editor with that design.
+  useEffect(() => {
+    let cancelled = false;
+    loadFromHash().then((shared) => {
+      if (shared && !cancelled) {
+        clearHash();
+        openInEditor(shared);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen w-full app-bg">
@@ -25,6 +47,7 @@ export default function App() {
           unit={unit}
           onChange={setUnit}
           onContinue={() => setStep('size')}
+          onResume={resumable ? () => openInEditor(resumable) : undefined}
         />
       )}
       {step === 'size' && (
