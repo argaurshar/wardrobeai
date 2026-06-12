@@ -13,7 +13,10 @@ import DoorStylePopup from '../components/DoorStylePopup.jsx';
 import PanelToolbar from '../components/PanelToolbar.jsx';
 import IsometricView from '../components/IsometricView.jsx';
 import SpecSheet from '../components/SpecSheet.jsx';
+import QuotePanel from '../components/QuotePanel.jsx';
+import RateCardEditor from '../components/RateCardEditor.jsx';
 import useLayoutHistory from '../editor/useLayoutHistory.js';
+import { loadRateCard, saveRateCard } from '../editor/pricing.js';
 import { DEFAULT_FINISH } from '../editor/finishes.js';
 import { defaultHardware } from '../editor/hardware.js';
 import { defaultLoft } from '../editor/loft.js';
@@ -55,6 +58,14 @@ export default function EditorScreen({ initialLayout, onBack }) {
   const [view, setView] = useState('interior');
   const [showSpec, setShowSpec] = useState(false);
   const [doorStylePopup, setDoorStylePopup] = useState(null); // { panelIdx } | null
+  const [rateCard, setRateCard] = useState(loadRateCard);
+  const [showRates, setShowRates] = useState(false);
+
+  const handleRatesSave = (card) => {
+    setRateCard(card);
+    saveRateCard(card);
+    setShowRates(false);
+  };
 
   const handleFinishChange = (id) => {
     history.push((prev) => (prev.finish === id ? prev : { ...prev, finish: id }));
@@ -321,6 +332,11 @@ export default function EditorScreen({ initialLayout, onBack }) {
           />
           <FinishPicker value={layout.finish} onChange={handleFinishChange} />
           <HardwarePicker value={layout.hardware} onChange={handleHardwareChange} />
+          <QuotePanel
+            layout={layout}
+            rateCard={rateCard}
+            onEditRates={() => setShowRates(true)}
+          />
         </aside>
 
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
@@ -403,7 +419,15 @@ export default function EditorScreen({ initialLayout, onBack }) {
       )}
 
       {showSpec && (
-        <SpecSheet layout={layout} onClose={() => setShowSpec(false)} />
+        <SpecSheet layout={layout} rateCard={rateCard} onClose={() => setShowSpec(false)} />
+      )}
+
+      {showRates && (
+        <RateCardEditor
+          rateCard={rateCard}
+          onSave={handleRatesSave}
+          onCancel={() => setShowRates(false)}
+        />
       )}
 
       {doorStylePopup && layout.doors?.panels[doorStylePopup.panelIdx] && (

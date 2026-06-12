@@ -1,11 +1,14 @@
 import { buildSpec } from '../editor/spec.js';
+import { computeQuote, loadRateCard, formatINR } from '../editor/pricing.js';
 import FrontView from './FrontView.jsx';
 
-// Printable specification / BOM sheet. No pricing — counts and specs only.
+// Printable specification sheet + quotation (from the designer's rate card).
 // Print uses the @media print rules in index.css (window.print → Save as PDF).
-export default function SpecSheet({ layout, onClose }) {
+export default function SpecSheet({ layout, rateCard, onClose }) {
   const spec = buildSpec(layout);
   const d = spec.dims;
+  const card = rateCard ?? loadRateCard();
+  const quote = computeQuote(layout, card);
   return (
     <div
       className="fixed inset-0 z-40 overflow-auto bg-black/70 backdrop-blur-sm p-6 flex items-start justify-center"
@@ -34,19 +37,27 @@ export default function SpecSheet({ layout, onClose }) {
         </div>
 
         <div className="px-10 py-8">
-          <header className="mb-6">
-            <p className="text-[11px] uppercase tracking-[0.25em] text-stone-500 mb-1">
-              Wardrobe specification
-            </p>
-            <h1 className="text-2xl font-semibold font-mono">
-              {d.width} × {d.height} × {d.depth} mm
-            </h1>
-            {d.hasLoft && (
-              <p className="text-sm text-stone-500 mt-1">
-                Overall height incl. loft: {d.overallHeight} mm
+          <header className="mb-6 flex items-start justify-between gap-6">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.25em] text-stone-500 mb-1">
+                Wardrobe specification & quotation
               </p>
+              <h1 className="text-2xl font-semibold font-mono">
+                {d.width} × {d.height} × {d.depth} mm
+              </h1>
+            </div>
+            {(card.designer.name || card.designer.phone) && (
+              <div className="text-right shrink-0">
+                <p className="text-sm font-semibold">{card.designer.name}</p>
+                <p className="text-xs text-stone-500">{card.designer.phone}</p>
+              </div>
             )}
           </header>
+          {d.hasLoft && (
+            <p className="text-sm text-stone-500 -mt-4 mb-6">
+              Overall height incl. loft: {d.overallHeight} mm
+            </p>
+          )}
 
           <div
             className="flex items-center justify-center border border-stone-200 rounded-lg mb-8 bg-stone-50"
@@ -105,8 +116,63 @@ export default function SpecSheet({ layout, onClose }) {
             </Section>
           </div>
 
+          <section className="mt-8">
+            <h3 className="text-[11px] uppercase tracking-[0.18em] text-stone-500 border-b border-stone-200 pb-1.5 mb-3">
+              Quotation
+            </h3>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-[10px] uppercase tracking-wider text-stone-400">
+                  <th className="text-left font-medium pb-1.5">Item</th>
+                  <th className="text-right font-medium pb-1.5">Qty</th>
+                  <th className="text-right font-medium pb-1.5">Rate</th>
+                  <th className="text-right font-medium pb-1.5">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {quote.lines.map((l, i) => (
+                  <tr key={i} className="border-t border-stone-100">
+                    <td className="py-1.5 pr-2 text-stone-700">{l.label}</td>
+                    <td className="py-1.5 text-right font-mono text-stone-600 whitespace-nowrap">
+                      {l.qty}
+                    </td>
+                    <td className="py-1.5 text-right font-mono text-stone-600 whitespace-nowrap">
+                      {l.rate != null ? formatINR(l.rate) : '—'}
+                    </td>
+                    <td className="py-1.5 text-right font-mono text-stone-900 whitespace-nowrap">
+                      {formatINR(l.amount)}
+                    </td>
+                  </tr>
+                ))}
+                <tr className="border-t border-stone-300">
+                  <td colSpan={3} className="py-1.5 text-right text-stone-600">
+                    Subtotal
+                  </td>
+                  <td className="py-1.5 text-right font-mono">{formatINR(quote.subtotal)}</td>
+                </tr>
+                <tr>
+                  <td colSpan={3} className="py-1 text-right text-stone-600">
+                    GST {quote.gstPct}%
+                  </td>
+                  <td className="py-1 text-right font-mono">{formatINR(quote.gst)}</td>
+                </tr>
+                <tr className="border-t-2 border-stone-900">
+                  <td colSpan={3} className="py-2 text-right font-semibold">
+                    Total
+                  </td>
+                  <td className="py-2 text-right font-mono font-bold text-base">
+                    {formatINR(quote.total)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            {card.terms && (
+              <p className="mt-3 text-[11px] text-stone-500">{card.terms}</p>
+            )}
+          </section>
+
           <footer className="mt-8 pt-4 border-t border-stone-200 text-[11px] text-stone-400">
-            Specification only — not a price quotation. Generated by WardrobeAI.
+            Estimate — final quote subject to site measurement. Generated by WardrobeAI.
           </footer>
         </div>
       </div>
