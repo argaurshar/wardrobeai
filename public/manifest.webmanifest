@@ -1,0 +1,25 @@
+{
+  "name": "WardrobeAI",
+  "short_name": "Wardrobe",
+  "description": "Design modular wardrobes — layout, finishes, quotation and cut list.",
+  "start_url": "/wardrobeai/",
+  "scope": "/wardrobeai/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1120",
+  "theme_color": "#0b1120",
+  "icons": [
+    {
+      "src": "/wardrobeai/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/wardrobeai/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
