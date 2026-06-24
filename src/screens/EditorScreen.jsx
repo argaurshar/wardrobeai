@@ -373,12 +373,12 @@ export default function EditorScreen({ initialLayout, onBack }) {
 
   return (
     <div className="min-h-screen lg:h-screen flex flex-col items-center px-3 sm:px-6 lg:px-10 py-4 overflow-y-auto lg:overflow-hidden animate-rise">
-      <header className="w-full max-w-[1500px] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 shrink-0">
-        <div>
-          <p className="text-accent text-[11px] uppercase tracking-architectural mb-2">
+      <header className="w-full max-w-[1500px] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-3 sm:mb-4 shrink-0">
+        <div className="min-w-0">
+          <p className="text-accent text-[11px] uppercase tracking-architectural mb-1 sm:mb-2 truncate">
             Editor — {layout.label}
           </p>
-          <h1 className="text-stone-100 text-xl sm:text-2xl font-normal tracking-tight font-mono">
+          <h1 className="text-stone-100 text-base sm:text-2xl font-normal tracking-tight font-mono whitespace-nowrap">
             {layout.dims.width} × {layout.dims.height} × {layout.dims.depth} mm
           </h1>
         </div>
@@ -401,43 +401,44 @@ export default function EditorScreen({ initialLayout, onBack }) {
           </button>
           <button
             onClick={() => setShowProjects(true)}
-            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
+            className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-700 text-stone-300 text-xs sm:text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
             title="Save, load, export or import designs"
           >
             Projects
           </button>
           <button
             onClick={handlePng}
-            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
+            className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-700 text-stone-300 text-xs sm:text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
             title="Download the current view as an image"
           >
             PNG
           </button>
           <button
             onClick={handleShare}
-            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
+            className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-700 text-stone-300 text-xs sm:text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
             title="Copy a link that opens this exact design"
           >
             {shareMsg ?? 'Share'}
           </button>
           <button
             onClick={() => setShowCutList(true)}
-            className="px-4 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
+            className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-700 text-stone-300 text-xs sm:text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
             title="Panel cut list and hardware quantities for production"
           >
             Cut list
           </button>
           <button
             onClick={() => setShowSpec(true)}
-            className="ml-2 px-5 py-2 rounded-full bg-accent text-surround text-sm font-semibold hover:bg-accentHover hover:shadow-glow hover:scale-[1.03] active:scale-95 transition-all duration-200"
+            className="px-3 py-1.5 sm:ml-2 sm:px-5 sm:py-2 rounded-full bg-accent text-surround text-xs sm:text-sm font-semibold hover:bg-accentHover hover:shadow-glow hover:scale-[1.03] active:scale-95 transition-all duration-200"
           >
             Spec sheet
           </button>
           <button
             onClick={onBack}
-            className="px-5 py-2 rounded-full border border-stone-700 text-stone-300 text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
+            className="px-3 py-1.5 sm:px-5 sm:py-2 rounded-full border border-stone-700 text-stone-300 text-xs sm:text-sm hover:border-stone-500 hover:bg-stone-800/60 active:scale-95 transition-all duration-200"
           >
-            Back to options
+            <span className="sm:hidden">Back</span>
+            <span className="hidden sm:inline">Back to options</span>
           </button>
         </div>
       </header>
@@ -470,7 +471,7 @@ export default function EditorScreen({ initialLayout, onBack }) {
           <AuditPanel layout={layout} />
         </aside>
 
-        <div className="flex-1 min-w-0 flex flex-col min-h-[60vh] lg:min-h-0 order-1 lg:order-2">
+        <div className="flex-1 min-w-0 flex flex-col lg:min-h-0 order-1 lg:order-2">
           <div className="flex justify-center mb-3 shrink-0 overflow-x-auto">
             <ViewToggle value={view} onChange={setView} />
           </div>
@@ -478,7 +479,7 @@ export default function EditorScreen({ initialLayout, onBack }) {
           <div
             ref={canvasRef}
             onPointerDownCapture={onCanvasPointerDown}
-            className="bg-cream rounded-2xl shadow-inset flex-1 min-h-0 relative overflow-hidden"
+            className="bg-cream rounded-2xl shadow-inset h-[58vh] lg:h-auto lg:flex-1 min-h-0 relative overflow-hidden"
           >
             {view !== '3d' && (
               <div className="absolute top-3 right-3 z-10 flex items-center gap-1">
