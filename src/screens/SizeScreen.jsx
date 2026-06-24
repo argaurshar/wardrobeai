@@ -38,7 +38,7 @@ export default function SizeScreen({ unit, onBack, onSubmit }) {
         Entered in <span className="text-stone-300">{unit}</span>.
       </p>
 
-      <div className="grid grid-cols-3 gap-6 w-full max-w-2xl">
+      <div className="grid grid-cols-3 gap-3 sm:gap-6 w-full max-w-2xl">
         <DimInput label="Width" unit={unit} value={vals.width} onChange={set('width')} />
         <DimInput label="Height" unit={unit} value={vals.height} onChange={set('height')} />
         <DimInput label="Depth" unit={unit} value={vals.depth} onChange={set('depth')} />

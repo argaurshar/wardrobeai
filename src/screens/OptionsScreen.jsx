@@ -30,8 +30,8 @@ export default function OptionsScreen({ dims, onBack, onConfirm }) {
   };
 
   return (
-    <div className="min-h-screen px-10 pt-20 pb-12 animate-rise">
-      <header className="flex items-center justify-between mb-10 max-w-[1600px] mx-auto">
+    <div className="min-h-screen px-4 sm:px-10 pt-24 sm:pt-20 pb-12 animate-rise">
+      <header className="flex items-start sm:items-center justify-between gap-3 mb-10 max-w-[1600px] mx-auto">
         <div>
           <p className="text-accent text-[11px] uppercase tracking-architectural mb-2">
             Step 03 — Pick a starting layout

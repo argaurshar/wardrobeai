@@ -93,7 +93,7 @@ function Stepper({ current, onJump }) {
             {i > 0 && (
               <span
                 className={[
-                  'block w-8 h-px transition-colors duration-300',
+                  'block w-4 sm:w-8 h-px transition-colors duration-300',
                   done || active ? 'bg-accent/60' : 'bg-stone-700',
                 ].join(' ')}
               />

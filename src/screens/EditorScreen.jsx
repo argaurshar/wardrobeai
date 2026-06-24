@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import WardrobeSVG from '../components/WardrobeSVG.jsx';
 import ComponentEditPopup from '../components/ComponentEditPopup.jsx';
 import ColumnToolbar from '../components/ColumnToolbar.jsx';
@@ -18,9 +18,11 @@ import RateCardEditor from '../components/RateCardEditor.jsx';
 import ProjectsPanel from '../components/ProjectsPanel.jsx';
 import CutListSheet from '../components/CutListSheet.jsx';
 import AuditPanel from '../components/AuditPanel.jsx';
+// three.js is heavy — only load it when the 3D tab is opened.
+const ThreeView = lazy(() => import('../components/ThreeView.jsx'));
 import useLayoutHistory from '../editor/useLayoutHistory.js';
 import { loadRateCard, saveRateCard } from '../editor/pricing.js';
-import { saveCurrent, buildShareUrl } from '../editor/storage.js';
+import { saveCurrent, buildShareUrl, triggerDownload } from '../editor/storage.js';
 import { exportSvgToPng } from '../editor/exportPng.js';
 import { DEFAULT_FINISH } from '../editor/finishes.js';
 import { defaultHardware } from '../editor/hardware.js';
@@ -98,6 +100,7 @@ export default function EditorScreen({ initialLayout, onBack }) {
   // Pan: alt-drag or middle-drag anywhere; plain drag on the cream background
   // when zoomed in. Captured before the SVG's own drag handlers.
   const onCanvasPointerDown = (e) => {
+    if (view === '3d') return; // OrbitControls owns interaction in 3D
     const onBackground =
       e.target === e.currentTarget || e.target.dataset?.canvasBg === '1';
     if (!(e.altKey || e.button === 1 || (onBackground && zoom > 1))) return;
@@ -143,13 +146,17 @@ export default function EditorScreen({ initialLayout, onBack }) {
   };
 
   const handlePng = async () => {
+    const filename = `wardrobe-${view}-${layout.dims.width}x${layout.dims.height}.png`;
+    // 3D view renders to a WebGL <canvas>; the others to <svg>.
+    const canvas3d = canvasRef.current?.querySelector('canvas');
+    if (canvas3d) {
+      canvas3d.toBlob((blob) => blob && triggerDownload(blob, filename));
+      return;
+    }
     const svg = canvasRef.current?.querySelector('svg');
     if (!svg) return;
     try {
-      await exportSvgToPng(
-        svg,
-        `wardrobe-${view}-${layout.dims.width}x${layout.dims.height}.png`,
-      );
+      await exportSvgToPng(svg, filename);
     } catch {
       setShareMsg('PNG export failed');
       setTimeout(() => setShareMsg(null), 2500);
@@ -365,17 +372,17 @@ export default function EditorScreen({ initialLayout, onBack }) {
       : null;
 
   return (
-    <div className="h-screen flex flex-col items-center px-10 py-4 overflow-hidden animate-rise">
-      <header className="w-full max-w-[1500px] flex items-center justify-between mb-4 shrink-0">
+    <div className="min-h-screen lg:h-screen flex flex-col items-center px-3 sm:px-6 lg:px-10 py-4 overflow-y-auto lg:overflow-hidden animate-rise">
+      <header className="w-full max-w-[1500px] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 shrink-0">
         <div>
           <p className="text-accent text-[11px] uppercase tracking-architectural mb-2">
             Editor — {layout.label}
           </p>
-          <h1 className="text-stone-100 text-2xl font-normal tracking-tight font-mono">
+          <h1 className="text-stone-100 text-xl sm:text-2xl font-normal tracking-tight font-mono">
             {layout.dims.width} × {layout.dims.height} × {layout.dims.depth} mm
           </h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center flex-wrap gap-2 sm:justify-end">
           <button
             onClick={history.undo}
             disabled={!history.canUndo}
@@ -435,8 +442,8 @@ export default function EditorScreen({ initialLayout, onBack }) {
         </div>
       </header>
 
-      <div className="w-full max-w-[1500px] flex gap-8 flex-1 min-h-0">
-        <aside className="w-56 shrink-0 overflow-y-auto">
+      <div className="w-full max-w-[1500px] flex flex-col lg:flex-row gap-4 lg:gap-8 flex-1 min-h-0">
+        <aside className="w-full lg:w-56 shrink-0 order-2 lg:order-1 lg:overflow-y-auto">
           {view === 'interior' ? (
             <ComponentPalette
               onCardDown={onPaletteCardDown}
@@ -463,8 +470,8 @@ export default function EditorScreen({ initialLayout, onBack }) {
           <AuditPanel layout={layout} />
         </aside>
 
-        <div className="flex-1 min-w-0 flex flex-col min-h-0">
-          <div className="flex justify-center mb-3 shrink-0">
+        <div className="flex-1 min-w-0 flex flex-col min-h-[60vh] lg:min-h-0 order-1 lg:order-2">
+          <div className="flex justify-center mb-3 shrink-0 overflow-x-auto">
             <ViewToggle value={view} onChange={setView} />
           </div>
 
@@ -473,30 +480,40 @@ export default function EditorScreen({ initialLayout, onBack }) {
             onPointerDownCapture={onCanvasPointerDown}
             className="bg-cream rounded-2xl shadow-inset flex-1 min-h-0 relative overflow-hidden"
           >
-            <div className="absolute top-3 right-3 z-10 flex items-center gap-1">
-              <ZoomButton label="−" title="Zoom out" onClick={() => zoomBy(1 / 1.25)} />
-              <span className="px-2 py-1 rounded-md bg-stone-900/80 text-stone-300 text-[11px] font-mono tabular-nums select-none">
-                {Math.round(zoom * 100)}%
-              </span>
-              <ZoomButton label="+" title="Zoom in (Ctrl + scroll)" onClick={() => zoomBy(1.25)} />
-              {(zoom !== 1 || pan.x !== 0 || pan.y !== 0) && (
-                <ZoomButton
-                  label="⤢"
-                  title="Reset zoom & pan"
-                  onClick={() => {
-                    setZoom(1);
-                    setPan({ x: 0, y: 0 });
-                  }}
-                />
-              )}
-            </div>
+            {view !== '3d' && (
+              <div className="absolute top-3 right-3 z-10 flex items-center gap-1">
+                <ZoomButton label="−" title="Zoom out" onClick={() => zoomBy(1 / 1.25)} />
+                <span className="px-2 py-1 rounded-md bg-stone-900/80 text-stone-300 text-[11px] font-mono tabular-nums select-none">
+                  {Math.round(zoom * 100)}%
+                </span>
+                <ZoomButton label="+" title="Zoom in (Ctrl + scroll)" onClick={() => zoomBy(1.25)} />
+                {(zoom !== 1 || pan.x !== 0 || pan.y !== 0) && (
+                  <ZoomButton
+                    label="⤢"
+                    title="Reset zoom & pan"
+                    onClick={() => {
+                      setZoom(1);
+                      setPan({ x: 0, y: 0 });
+                    }}
+                  />
+                )}
+              </div>
+            )}
             <div
               data-canvas-bg="1"
-              className="w-full h-full p-4 flex items-center justify-center"
-              style={{
-                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                cursor: zoom > 1 ? 'grab' : undefined,
-              }}
+              className={
+                view === '3d'
+                  ? 'w-full h-full'
+                  : 'w-full h-full p-4 flex items-center justify-center'
+              }
+              style={
+                view === '3d'
+                  ? undefined
+                  : {
+                      transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                      cursor: zoom > 1 ? 'grab' : undefined,
+                    }
+              }
             >
             {view === 'interior' && (
               <WardrobeSVG
@@ -533,6 +550,17 @@ export default function EditorScreen({ initialLayout, onBack }) {
               />
             )}
               {view === 'isometric' && <IsometricView layout={layout} />}
+              {view === '3d' && (
+                <Suspense
+                  fallback={
+                    <div className="w-full h-full flex items-center justify-center text-stone-500 text-sm">
+                      Loading 3D…
+                    </div>
+                  }
+                >
+                  <ThreeView layout={layout} />
+                </Suspense>
+              )}
             </div>
           </div>
 
