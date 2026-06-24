@@ -1,9 +1,10 @@
-// View toggle: INTERIOR (Phase 1 layout editor) vs FRONT (Phase 2 closed
-// face). Isometric will land later as a third slot.
+// View toggle: INTERIOR layout editor, FRONT closed face, ISOMETRIC projection,
+// and 3D (real three.js render).
 const VIEWS = [
   { id: 'interior', label: 'Interior' },
   { id: 'front', label: 'Front' },
   { id: 'isometric', label: 'Isometric' },
+  { id: '3d', label: '3D' },
 ];
 
 export default function ViewToggle({ value, onChange }) {
